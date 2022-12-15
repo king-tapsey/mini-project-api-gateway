@@ -16,9 +16,23 @@ public class GatewayConfig {
 
     @Bean
     public RouteLocator routes(RouteLocatorBuilder builder) {
-        return builder.routes().route("auth", r -> r.path("/auth**").filters(f -> f.filter(filter)).uri("lb://auth"))
+        return builder.routes().
+                route("auth", r -> r.path("/api/auth/**")
+                    .filters(f -> f.filter(filter))
+                    .uri("lb://REGISTRATION")).
 
-                .route("task-service", r -> r.path("/task-service/**").filters(f -> f.filter(filter)).uri("lb://TASK-SERVICE")).build();
+                route("registration", r -> r.path("/registration/**")
+                        .filters(f -> f.filter(filter))
+                        .uri("lb://REGISTRATION")).
+
+                route("tasks", r -> r.path("/v1/tasks/**")
+                        .filters(f -> f.filter(filter))
+                        .uri("lb://TASK-SERVICE")).
+
+                route("task-service", r -> r.path("/task-service/**")
+                        .filters(f -> f.filter(filter))
+                        .uri("lb://TASK-SERVICE"))
+                .build();
     }
 
 

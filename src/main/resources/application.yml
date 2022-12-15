@@ -5,5 +5,5 @@ spring:
     import: configserver:${CONFIG_SERVER_URI}
 
 jwt:
-    header: Authorization
+#    header: Authorization
     secret: mysecret
