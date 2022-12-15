@@ -3,3 +3,7 @@ spring:
     name: mini-project-api-gateway
   config:
     import: configserver:${CONFIG_SERVER_URI}
+
+jwt:
+#    header: Authorization
+    secret: mysecret

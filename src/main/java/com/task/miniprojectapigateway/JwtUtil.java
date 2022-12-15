@@ -1,37 +1,43 @@
 package com.task.miniprojectapigateway;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.security.Key;
+import java.security.SignatureException;
 import java.util.Date;
 
 @Component
+
 public class JwtUtil {
-    @Value("mysecret")
-    private String secret;
+    @Value("${jwt.secret}")
+    private String jwtSecret;
 
-    private Key key;
-
-    @PostConstruct
-    public void init(){
-        this.key = Keys.hmacShaKeyFor(secret.getBytes());
+    public Claims getClaims(final String token) {
+        try {
+            Claims body = Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
+            return body;
+        } catch (Exception e) {
+            System.out.println(e.getMessage() + " => " + e);
+        }
+        return null;
     }
 
-    public Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
+    public void validateToken(final String token) throws JwtTokenMalformedException, JwtTokenMissingException {
+        try {
+            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token);
+        } catch (MalformedJwtException ex) {
+            throw new JwtTokenMalformedException("Invalid JWT token");
+        } catch (ExpiredJwtException ex) {
+            throw new JwtTokenMalformedException("Expired JWT token");
+        } catch (UnsupportedJwtException ex) {
+            throw new JwtTokenMalformedException("Unsupported JWT token");
+        } catch (IllegalArgumentException ex) {
+            throw new JwtTokenMissingException("JWT claims string is empty.");
+        }
     }
-
-    private boolean isTokenExpired(String token) {
-        return this.getAllClaimsFromToken(token).getExpiration().before(new Date());
-    }
-
-    public boolean isInvalid(String token) {
-        return this.isTokenExpired(token);
-    }
-
 }
